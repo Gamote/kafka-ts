@@ -1,3 +1,3 @@
-# Kafka Helper
+# Kafka TS
 
-WIP
+Opinionated Kafka Client written in TypeScript
