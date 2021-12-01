@@ -1,0 +1,39 @@
+{
+  "name": "kafka-ts",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/Gamote/kafka-ts.git",
+  "author": "David Gamote <contact@gamote.ro>",
+  "license": "MIT",
+  "private": false,
+  "engines": {
+    "node": ">=14.17.2"
+  },
+  "scripts": {
+    "dev": "ts-node-dev --poll --respawn --transpile-only --exit-child src/index.ts",
+    "dev:typecheck": "tsc --noEmit --watch",
+    "build": "tsc",
+    "start": "node ./build/main.js",
+    "eslint": "eslint .",
+    "eslint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.2",
+    "@types/node": "^16.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^5.1.1",
+    "prettier": "^2.4.1",
+    "ts-node": "^10.4.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "kafkajs": "^1.15.0"
+  }
+}
