@@ -82,11 +82,12 @@ export class KafkaConsumer<TypeValues> {
 
   public on = <Type extends keyof TypeValues>(
     type: Type,
-    handler: (values: TypeValues[Type]) => void,
+    handler: (values: TypeValues[Type]) => void | Promise<void>,
   ) => {
-    this.eventEmitter.on(String(type), handler);
+    const promiseHandler = (value: TypeValues[Type]) => void handler(value);
+    this.eventEmitter.on(String(type), promiseHandler);
 
-    return () => this.eventEmitter.off(String(type), handler);
+    return () => this.eventEmitter.off(String(type), promiseHandler);
   };
 
   public async shutdown(): Promise<void> {
