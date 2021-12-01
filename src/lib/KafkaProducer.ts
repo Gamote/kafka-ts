@@ -7,7 +7,7 @@ import {
 } from "kafkajs";
 import KafkaClient from "./KafkaClient";
 
-export default class KafkaProducer<TypeValues> {
+export class KafkaProducer<TypeValues> {
   private readonly clientConfig: KafkaConfig;
   private readonly client: Kafka;
   private readonly topicId: string;

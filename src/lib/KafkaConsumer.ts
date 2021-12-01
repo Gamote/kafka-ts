@@ -2,7 +2,7 @@ import EventEmitter from "events";
 import { Consumer, ConsumerConfig, Kafka, KafkaConfig } from "kafkajs";
 import KafkaClient from "./KafkaClient";
 
-export default class KafkaConsumer<TypeValues> {
+export class KafkaConsumer<TypeValues> {
   private readonly clientConfig: KafkaConfig;
   private readonly client: Kafka;
   private readonly topicId: string;

@@ -1,8 +1,3 @@
 export * from "kafkajs";
-export * as KafkaConsumer from "./lib/KafkaConsumer";
-export * as KafkaProducer from "./lib/KafkaProducer";
-
-// export default {
-//   KafkaConsumer,
-//   KafkaProducer,
-// };
+export { KafkaProducer } from "./lib/KafkaProducer";
+export { KafkaConsumer } from "./lib/KafkaConsumer";
