@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["esnext"],
     "outDir": "build",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "declaration": true
   },
   "include": ["./src/**/*", "./prisma/seed.ts"]
 }
