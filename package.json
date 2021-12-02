@@ -1,7 +1,7 @@
 {
   "name": "kafka-ts",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "build/index.js",
   "repository": "https://github.com/Gamote/kafka-ts.git",
   "author": "David Gamote <contact@gamote.ro>",
   "license": "MIT",
