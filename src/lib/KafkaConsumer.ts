@@ -30,11 +30,20 @@ export class KafkaConsumer<TypeValues> {
   public startConsumer = async () => {
     try {
       await this.consumer.connect();
+    } catch (error) {
+      console.error("KafkaTs - error connecting:", error);
+    }
+
+    try {
       await this.consumer.subscribe({
         topic: this.topicId,
         fromBeginning: true,
       });
+    } catch (error) {
+      console.error("KafkaTs - error subscribing", error);
+    }
 
+    try {
       await this.consumer.run({
         autoCommit: false,
         eachBatch: async ({
@@ -76,7 +85,7 @@ export class KafkaConsumer<TypeValues> {
         },
       });
     } catch (error) {
-      console.log("Error:", error);
+      console.error("KafkaTs - running the batch processor", error);
     }
   };
 
