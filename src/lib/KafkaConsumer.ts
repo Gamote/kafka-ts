@@ -2,6 +2,8 @@ import EventEmitter from "events";
 import { Consumer, ConsumerConfig, Kafka, KafkaConfig } from "kafkajs";
 import KafkaClient from "./KafkaClient";
 
+type EventHandler<Values> = (values: Values) => void | Promise<void>;
+
 export class KafkaConsumer<TypeValues> {
   private readonly clientConfig: KafkaConfig;
   private readonly client: Kafka;
@@ -45,12 +47,11 @@ export class KafkaConsumer<TypeValues> {
 
     try {
       await this.consumer.run({
-        autoCommit: false,
-        eachBatch: async ({
-          batch,
-          resolveOffset,
-          commitOffsetsIfNecessary,
-        }) => {
+        autoCommit: true,
+        eachBatchAutoResolve: true,
+        eachBatch: async (payload) => {
+          const { batch } = payload;
+
           try {
             for (const message of batch.messages) {
               // Try determine the type
@@ -71,17 +72,20 @@ export class KafkaConsumer<TypeValues> {
                 : undefined;
 
               // Let listener know about the event
-              this.eventEmitter.emit(String(type), values);
+              this.emit(type, values as TypeValues[typeof type], async () => {
+                // Actions to take after the event was successfully handled
+                await payload.heartbeat();
+                payload.resolveOffset(message.offset);
+                await payload.commitOffsetsIfNecessary();
+                return;
+              });
             }
           } catch (e) {
             // TODO: discuss about what to do
             throw new Error("Cannot process this message batch");
           }
 
-          const offset = batch.messages[batch.messages.length - 1].offset;
-
-          resolveOffset(offset);
-          await commitOffsetsIfNecessary();
+          return Promise.resolve();
         },
       });
     } catch (error) {
@@ -89,14 +93,30 @@ export class KafkaConsumer<TypeValues> {
     }
   };
 
+  private emit = <Type extends keyof TypeValues>(
+    type: Type,
+    values: TypeValues[Type],
+    onSuccess?: () => void | Promise<void>,
+    onError?: (reason: unknown) => void | Promise<void>,
+  ) => {
+    this.eventEmitter.emit(String(type), values, onSuccess, onError);
+  };
+
   public on = <Type extends keyof TypeValues>(
     type: Type,
-    handler: (values: TypeValues[Type]) => void | Promise<void>,
+    handler: EventHandler<TypeValues[Type]>,
   ) => {
-    const promiseHandler = (value: TypeValues[Type]) => void handler(value);
-    this.eventEmitter.on(String(type), promiseHandler);
+    const customHandler = (
+      value: TypeValues[Type],
+      onSuccess?: () => void | Promise<void>,
+      onError?: (reason: unknown) => void | Promise<void>,
+    ) => {
+      void Promise.resolve(handler(value)).then(onSuccess).catch(onError);
+    };
 
-    return () => this.eventEmitter.off(String(type), promiseHandler);
+    this.eventEmitter.on(String(type), customHandler);
+
+    return () => this.eventEmitter.off(String(type), customHandler);
   };
 
   public async shutdown(): Promise<void> {

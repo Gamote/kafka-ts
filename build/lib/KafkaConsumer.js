@@ -13,13 +13,25 @@ class KafkaConsumer {
         this.startConsumer = async () => {
             try {
                 await this.consumer.connect();
+            }
+            catch (error) {
+                console.error("KafkaTs - error connecting:", error);
+            }
+            try {
                 await this.consumer.subscribe({
                     topic: this.topicId,
                     fromBeginning: true,
                 });
+            }
+            catch (error) {
+                console.error("KafkaTs - error subscribing", error);
+            }
+            try {
                 await this.consumer.run({
-                    autoCommit: false,
-                    eachBatch: async ({ batch, resolveOffset, commitOffsetsIfNecessary, }) => {
+                    autoCommit: true,
+                    eachBatchAutoResolve: true,
+                    eachBatch: async (payload) => {
+                        const { batch } = payload;
                         try {
                             for (const message of batch.messages) {
                                 // Try determine the type
@@ -35,27 +47,36 @@ class KafkaConsumer {
                                     ? JSON.parse(message.value.toString())
                                     : undefined;
                                 // Let listener know about the event
-                                this.eventEmitter.emit(String(type), values);
+                                this.emit(type, values, async () => {
+                                    // Actions to take after the event was successfully handled
+                                    await payload.heartbeat();
+                                    payload.resolveOffset(message.offset);
+                                    await payload.commitOffsetsIfNecessary();
+                                    return;
+                                });
                             }
                         }
                         catch (e) {
                             // TODO: discuss about what to do
                             throw new Error("Cannot process this message batch");
                         }
-                        const offset = batch.messages[batch.messages.length - 1].offset;
-                        resolveOffset(offset);
-                        await commitOffsetsIfNecessary();
+                        return Promise.resolve();
                     },
                 });
             }
             catch (error) {
-                console.log("Error:", error);
+                console.error("KafkaTs - running the batch processor", error);
             }
         };
+        this.emit = (type, values, onSuccess, onError) => {
+            this.eventEmitter.emit(String(type), values, onSuccess, onError);
+        };
         this.on = (type, handler) => {
-            const promiseHandler = (value) => void handler(value);
-            this.eventEmitter.on(String(type), promiseHandler);
-            return () => this.eventEmitter.off(String(type), promiseHandler);
+            const customHandler = (value, onSuccess, onError) => {
+                void Promise.resolve(handler(value)).then(onSuccess).catch(onError);
+            };
+            this.eventEmitter.on(String(type), customHandler);
+            return () => this.eventEmitter.off(String(type), customHandler);
         };
         this.clientConfig = clientConfig;
         this.client = new KafkaClient_1.default(clientConfig).client;

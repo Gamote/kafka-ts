@@ -1,6 +1,6 @@
 {
   "name": "kafka-ts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "build/index.js",
   "repository": "https://github.com/Gamote/kafka-ts.git",
   "author": "David Gamote <contact@gamote.ro>",
@@ -28,6 +28,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.1",
+    "kafkajs": "^1.15.0",
     "prettier": "^2.4.1",
     "ts-node": "^10.4.0",
     "ts-node-dev": "^1.1.8",

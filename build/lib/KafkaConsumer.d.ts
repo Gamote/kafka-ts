@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import EventEmitter from "events";
 import { ConsumerConfig, KafkaConfig } from "kafkajs";
+declare type EventHandler<Values> = (values: Values) => void | Promise<void>;
 export declare class KafkaConsumer<TypeValues> {
     private readonly clientConfig;
     private readonly client;
@@ -11,6 +12,8 @@ export declare class KafkaConsumer<TypeValues> {
     constructor(clientConfig: KafkaConfig, topicId: string, consumerConfig?: ConsumerConfig);
     private createConsumer;
     startConsumer: () => Promise<void>;
-    on: <Type extends keyof TypeValues>(type: Type, handler: (values: TypeValues[Type]) => void | Promise<void>) => () => EventEmitter;
+    private emit;
+    on: <Type extends keyof TypeValues>(type: Type, handler: EventHandler<TypeValues[Type]>) => () => EventEmitter;
     shutdown(): Promise<void>;
 }
+export {};
